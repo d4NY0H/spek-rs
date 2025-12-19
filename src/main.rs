@@ -8,6 +8,7 @@ use std::process::{Command, Stdio};
 use spek_rs::MyApp;
 use spek_rs::ffmpeg_setup;
 use spek_rs::settings;
+use spek_rs::utils;
 
 fn main() -> eframe::Result {
     ffmpeg_setup::setup_ffmpeg()?;
