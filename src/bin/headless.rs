@@ -1,6 +1,6 @@
-use spek_rs::settings::AppSettings;
-use spek_rs::MyApp;
-use spek_rs::utils::save_color_image_as_png;
+use crate::settings::AppSettings;
+use crate::MyApp;
+use crate::utils::save_color_image_as_png;
 use std::env;
 use std::path::Path;
 
