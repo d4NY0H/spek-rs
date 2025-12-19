@@ -447,3 +447,29 @@ pub fn get_ffmpeg_paths() -> FfmpegPaths {
         ffprobe,
     }
 }
+
+// ============================================================
+// ADDITIVE, HEADLESS PNG EXPORT
+// (verändert keinen bestehenden Code)
+// ============================================================
+
+pub fn save_color_image_as_png(
+    image: &eframe::egui::ColorImage,
+    output_path: &std::path::Path,
+) -> Result<(), String> {
+    let width = image.width() as u32;
+    let height = image.height() as u32;
+
+    let pixels: Vec<u8> = image
+        .pixels
+        .iter()
+        .flat_map(|p| p.to_array())
+        .collect();
+
+    let rgba_image = image::RgbaImage::from_raw(width, height, pixels)
+        .ok_or("Failed to create RGBA image buffer")?;
+
+    rgba_image
+        .save(output_path)
+        .map_err(|e| format!("Failed to save PNG: {}", e))
+}
