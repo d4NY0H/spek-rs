@@ -90,6 +90,70 @@ impl MyApp {
         }
     }
 
+// =====================================================================
+// HEADLESS / CLI SPECTROGRAM GENERATION (NO GUI)
+// =====================================================================
+pub fn regenerate_spectrogram_headless(&mut self) -> Option<ColorImage> {
+    let input_path = self.input_path.as_ref()?.clone();
+
+    let width = 500;
+    let height = 320;
+    let cancel_token = Arc::new(AtomicBool::new(false));
+
+    let spectrogram = utils::generate_spectrogram_in_memory(
+        &input_path,
+        &self.settings,
+        width,
+        height,
+        cancel_token,
+    )?;
+
+    // If no custom legend → return ffmpeg image directly
+    if !self.settings.legend {
+        self.final_image = Some(spectrogram.clone());
+        return Some(spectrogram);
+    }
+
+    // Custom legend compositing (same logic as GUI)
+    let filename = std::path::Path::new(&input_path)
+        .file_name()
+        .and_then(|s| s.to_str())
+        .unwrap_or("Unknown File");
+
+    let ffmpeg_settings = format!(
+        "{}, {}, {}",
+        self.settings.win_func.to_string(),
+        self.settings.scale.to_string(),
+        self.settings.color_scheme.to_string()
+    );
+
+    let legend_rgba = legend::draw_legend(
+        width,
+        height,
+        filename,
+        &ffmpeg_settings,
+        self.audio_info.clone(),
+        self.settings.saturation,
+        self.settings.color_scheme,
+        self.settings.split_channels,
+    );
+
+    let mut final_image = utils::rgba_image_to_color_image(&legend_rgba);
+
+    for y in 0..spectrogram.height() {
+        for x in 0..spectrogram.width() {
+            let dest_x = x + legend::LEFT_MARGIN as usize;
+            let dest_y = y + legend::TOP_MARGIN as usize;
+            if dest_x < final_image.width() && dest_y < final_image.height() {
+                final_image[(dest_x, dest_y)] = spectrogram[(x, y)];
+            }
+        }
+    }
+
+    self.final_image = Some(final_image.clone());
+    Some(final_image)
+}
+
     fn regenerate_spectrogram(&mut self, ctx: &egui::Context) {
         if self.input_path.is_none() {
             return;
