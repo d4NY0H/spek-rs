@@ -7,6 +7,7 @@ use std::process::{Command, Stdio};
 
 mod ui;
 use ui::MyApp;
+
 mod ffmpeg_setup;
 mod legend;
 mod palettes;
@@ -16,17 +17,65 @@ mod utils;
 fn main() -> eframe::Result {
     ffmpeg_setup::setup_ffmpeg()?;
 
-    env_logger::init(); // Log to stderr (if you run with `RUST_LOG=debug`).
+    env_logger::init();
     println!("spek-rs v{}", env!("CARGO_PKG_VERSION"));
 
     let args: Vec<String> = env::args().collect();
-    let input_path = if args.len() > 1 {
-        Some(args[1].clone())
-    } else {
-        None
-    };
 
-    // Handle multiple files
+    // -----------------------------
+    // CLI parsing
+    // -----------------------------
+    let mut input_path: Option<String> = None;
+    let mut png_output: Option<String> = None;
+
+    let mut i = 1;
+    while i < args.len() {
+        match args[i].as_str() {
+            "--png" => {
+                if i + 1 < args.len() {
+                    png_output = Some(args[i + 1].clone());
+                    i += 1;
+                }
+            }
+            arg => {
+                if input_path.is_none() {
+                    input_path = Some(arg.to_string());
+                }
+            }
+        }
+        i += 1;
+    }
+
+    let app_settings = settings::AppSettings::load();
+
+    // -----------------------------
+    // HEADLESS PNG MODE
+    // -----------------------------
+    if let Some(output_png) = png_output {
+        let mut app = MyApp::new(None, input_path.clone(), app_settings);
+
+        match app.regenerate_spectrogram_headless() {
+            Some(image) => {
+                utils::save_color_image_as_png(
+    &image,
+    std::path::Path::new(&output_png),
+)
+.expect("Failed to save PNG");
+                println!("Saved spectrogram to {}", output_png);
+            }
+            None => {
+                eprintln!("Failed to generate spectrogram");
+            }
+        }
+
+        return Ok(());
+    }
+
+    // -----------------------------
+    // GUI MODE (unchanged behaviour)
+    // -----------------------------
+
+    // Handle multiple files (spawn GUI instances)
     if args.len() > 2 {
         let exe_path = env::current_exe().expect("Failed to get current executable path");
         for path in args.iter().skip(2) {
@@ -41,8 +90,6 @@ fn main() -> eframe::Result {
             }
         }
     }
-
-    let app_settings = settings::AppSettings::load();
 
     let options = {
         let mut viewport = egui::ViewportBuilder::default();
@@ -62,9 +109,9 @@ fn main() -> eframe::Result {
         if app_settings.save_window_size {
             viewport = viewport.with_inner_size(app_settings.window_size);
         } else {
-            // spectogram + legend, spectogram + legend + menu bar
             viewport = viewport.with_inner_size([500.0 + 180.0, 320.0 + 128.0 + 39.0]);
         }
+
         viewport = viewport
             .with_min_inner_size([500.0 + 180.0, 320.0 + 128.0 + 39.0])
             .with_resizable(true);
@@ -80,9 +127,8 @@ fn main() -> eframe::Result {
         options,
         Box::new(move |_cc| {
             egui_extras::install_image_loaders(&_cc.egui_ctx);
-            // _cc.egui_ctx.set_theme(egui::Theme::Light);
             _cc.egui_ctx.set_theme(egui::Theme::Dark);
             Ok(Box::new(MyApp::new(None, input_path, app_settings)))
         }),
     )
-}
+} 
