@@ -100,9 +100,12 @@ pub fn regenerate_spectrogram_headless(&mut self) -> Option<ColorImage> {
     let height = 320;
     let cancel_token = Arc::new(AtomicBool::new(false));
 
+    let mut ffmpeg_settings = self.settings.clone();
+    ffmpeg_settings.legend = false;
+    
     let spectrogram = utils::generate_spectrogram_in_memory(
         &input_path,
-        &self.settings,
+        &ffmpeg_settings,
         width,
         height,
         cancel_token,
