@@ -5,14 +5,9 @@ use image;
 use std::env;
 use std::process::{Command, Stdio};
 
-mod ui;
-use ui::MyApp;
-
-mod ffmpeg_setup;
-mod legend;
-mod palettes;
-mod settings;
-mod utils;
+use spek_rs::MyApp;
+use spek_rs::ffmpeg_setup;
+use spek_rs::settings;
 
 fn main() -> eframe::Result {
     ffmpeg_setup::setup_ffmpeg()?;
