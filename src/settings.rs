@@ -2,184 +2,33 @@ use serde::{Deserialize, Serialize};
 use std::fs;
 use std::path::PathBuf;
 
-#[derive(PartialEq, Eq, Debug, Copy, Clone, Serialize, Deserialize)]
-pub enum SpectrogramColorScheme {
-    Intensity,
-    Channel,
-    Rainbow,
-    Moreland,
-    Nebulae,
-    Fire,
-    Fiery,
-    Fruit,
-    Cool,
-    Magma,
-    Green,
-    Viridis,
-    Plasma,
-    Cividis,
-    Terrain,
-}
+use crate::palettes::SpectrogramColorScheme;
+use crate::utils::SpectogramWinFunc;
 
-impl SpectrogramColorScheme {
-    pub fn as_str(&self) -> &'static str {
-        match self {
-            SpectrogramColorScheme::Intensity => "intensity",
-            SpectrogramColorScheme::Channel => "channel",
-            SpectrogramColorScheme::Rainbow => "rainbow",
-            SpectrogramColorScheme::Moreland => "moreland",
-            SpectrogramColorScheme::Nebulae => "nebulae",
-            SpectrogramColorScheme::Fire => "fire",
-            SpectrogramColorScheme::Fiery => "fiery",
-            SpectrogramColorScheme::Fruit => "fruit",
-            SpectrogramColorScheme::Cool => "cool",
-            SpectrogramColorScheme::Magma => "magma",
-            SpectrogramColorScheme::Green => "green",
-            SpectrogramColorScheme::Viridis => "viridis",
-            SpectrogramColorScheme::Plasma => "plasma",
-            SpectrogramColorScheme::Cividis => "cividis",
-            SpectrogramColorScheme::Terrain => "terrain",
-        }
-    }
-    pub const VALUES: [Self; 15] = [
-        Self::Intensity,
-        Self::Channel,
-        Self::Rainbow,
-        Self::Moreland,
-        Self::Nebulae,
-        Self::Fire,
-        Self::Fiery,
-        Self::Fruit,
-        Self::Cool,
-        Self::Magma,
-        Self::Green,
-        Self::Viridis,
-        Self::Plasma,
-        Self::Cividis,
-        Self::Terrain,
-    ];
-}
-
-impl std::fmt::Display for SpectrogramColorScheme {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        write!(f, "{:?}", self)
-    }
-}
-
-#[derive(PartialEq, Eq, Debug, Copy, Clone, Serialize, Deserialize)]
-pub enum SpectogramWinFunc {
-    Rect,
-    Bartlett,
-    Hann,
-    Hanning,
-    Hamming,
-    Blackman,
-    Welch,
-    Flattop,
-    Bharris,
-    Bnuttall,
-    Bhann,
-    Sine,
-    Nuttall,
-    Lanczos,
-    Gauss,
-    Tukey,
-    Dolph,
-    Cauchy,
-    Parzen,
-    Poisson,
-    Bohman,
-    Kaiser,
-}
-
-impl SpectogramWinFunc {
-    pub fn as_str(&self) -> &'static str {
-        match self {
-            SpectogramWinFunc::Rect => "rect",
-            SpectogramWinFunc::Bartlett => "bartlett",
-            SpectogramWinFunc::Hann => "hann",
-            SpectogramWinFunc::Hanning => "hanning",
-            SpectogramWinFunc::Hamming => "hamming",
-            SpectogramWinFunc::Blackman => "blackman",
-            SpectogramWinFunc::Welch => "welch",
-            SpectogramWinFunc::Flattop => "flattop",
-            SpectogramWinFunc::Bharris => "bharris",
-            SpectogramWinFunc::Bnuttall => "bnuttall",
-            SpectogramWinFunc::Bhann => "bhann",
-            SpectogramWinFunc::Sine => "sine",
-            SpectogramWinFunc::Nuttall => "nuttall",
-            SpectogramWinFunc::Lanczos => "lanczos",
-            SpectogramWinFunc::Gauss => "gauss",
-            SpectogramWinFunc::Tukey => "tukey",
-            SpectogramWinFunc::Dolph => "dolph",
-            SpectogramWinFunc::Cauchy => "cauchy",
-            SpectogramWinFunc::Parzen => "parzen",
-            SpectogramWinFunc::Poisson => "poisson",
-            SpectogramWinFunc::Bohman => "bohman",
-            SpectogramWinFunc::Kaiser => "kaiser",
-        }
-    }
-    pub const VALUES: [Self; 22] = [
-        Self::Rect,
-        Self::Bartlett,
-        Self::Hann,
-        Self::Hanning,
-        Self::Hamming,
-        Self::Blackman,
-        Self::Welch,
-        Self::Flattop,
-        Self::Bharris,
-        Self::Bnuttall,
-        Self::Bhann,
-        Self::Sine,
-        Self::Nuttall,
-        Self::Lanczos,
-        Self::Gauss,
-        Self::Tukey,
-        Self::Dolph,
-        Self::Cauchy,
-        Self::Parzen,
-        Self::Poisson,
-        Self::Bohman,
-        Self::Kaiser,
-    ];
-}
-
-impl std::fmt::Display for SpectogramWinFunc {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        write!(f, "{:?}", self)
-    }
-}
-
-#[derive(PartialEq, Eq, Debug, Copy, Clone, Serialize, Deserialize)]
+#[derive(Serialize, Deserialize, Debug, Clone, Copy, PartialEq)]
 pub enum SpectrogramScale {
-    Lin,
-    Sqrt,
-    Cbrt,
+    Linear,
     Log,
     FourthRt,
     FifthRt,
 }
 
 impl SpectrogramScale {
-    pub fn as_str(&self) -> &'static str {
-        match self {
-            SpectrogramScale::Lin => "lin",
-            SpectrogramScale::Sqrt => "sqrt",
-            SpectrogramScale::Cbrt => "cbrt",
-            SpectrogramScale::Log => "log",
-            SpectrogramScale::FourthRt => "4thrt",
-            SpectrogramScale::FifthRt => "5thrt",
-        }
-    }
-    pub const VALUES: [Self; 6] = [
-        Self::Lin,
-        Self::Sqrt,
-        Self::Cbrt,
+    pub const ALL: [Self; 4] = [
+        Self::Linear,
         Self::Log,
         Self::FourthRt,
         Self::FifthRt,
     ];
+
+    pub fn as_str(&self) -> &'static str {
+        match self {
+            Self::Linear => "Linear",
+            Self::Log => "Log",
+            Self::FourthRt => "Fourth root",
+            Self::FifthRt => "Fifth root",
+        }
+    }
 }
 
 impl std::fmt::Display for SpectrogramScale {
@@ -207,6 +56,13 @@ pub struct AppSettings {
     pub custom_legend: bool,
     pub save_window_size: bool,
     pub window_size: [f32; 2],
+
+    // -------------------------
+    // Headless / PNG Optionen
+    // -------------------------
+    pub png_width: u32,
+    pub png_height: u32,
+    pub show_version_in_legend: bool,
 }
 
 impl Default for AppSettings {
@@ -228,6 +84,11 @@ impl Default for AppSettings {
             custom_legend: true,
             save_window_size: false,
             window_size: [500.0 + 180.0, 320.0 + 128.0 + 39.0],
+
+            // Headless Defaults (ändert aktuelles Verhalten NICHT)
+            png_width: 0,   // 0 = automatisch / bestehende Logik
+            png_height: 0,  // 0 = automatisch / bestehende Logik
+            show_version_in_legend: true,
         }
     }
 }
