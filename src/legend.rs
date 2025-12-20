@@ -455,18 +455,20 @@ pub fn draw_legend(
         &truncated_display_string,
     );
 
-    // Draw app name and version in top-right corner
-    let app_info = format!("{} v{}", "Spek-rs", env!("CARGO_PKG_VERSION"));
-    let (text_width, _) = imageproc::drawing::text_size(font_small, &font, &app_info);
-    draw_text_mut(
-        &mut image,
-        text_color,
-        (final_width - text_width - 10) as i32,
-        5,
-        font_small,
-        &font,
-        &app_info,
-    );
+    // Draw app name and version in top-right corner (optional)
+    if show_version {
+        let app_info = format!("{} v{}", "Spek-rs", env!("CARGO_PKG_VERSION"));
+        let (text_width, _) = imageproc::drawing::text_size(font_small, &font, &app_info);
+        draw_text_mut(
+            &mut image,
+            text_color,
+            (final_width - text_width - 10) as i32,
+            5,
+            font_small,
+            &font,
+            &app_info,
+        );
+    }
 
     // dBFS gradient (right)
     let dbfs_label = "dBFS";
