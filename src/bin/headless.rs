@@ -16,44 +16,60 @@ fn main() {
     let input_path = args[1].clone();
     let output_path = args[2].clone();
 
-    // -----------------------------
-    // Default Settings
-    // -----------------------------
+    // -------------------------------------------------
+    // Default settings
+    // -------------------------------------------------
     let mut settings = AppSettings::default();
 
-    // -----------------------------
-    // Optional CLI Flags
-    // -----------------------------
+    let mut width: Option<u32> = None;
+    let mut height: Option<u32> = None;
+
+    // -------------------------------------------------
+    // CLI flags
+    // -------------------------------------------------
     let mut i = 3;
     while i < args.len() {
         match args[i].as_str() {
             "--width" => {
                 if i + 1 < args.len() {
-                    settings.png_width = args[i + 1].parse().unwrap_or(0);
+                    width = args[i + 1].parse::<u32>().ok();
                     i += 1;
                 }
             }
             "--height" => {
                 if i + 1 < args.len() {
-                    settings.png_height = args[i + 1].parse().unwrap_or(0);
+                    height = args[i + 1].parse::<u32>().ok();
                     i += 1;
                 }
             }
             "--no-version" => {
-                settings.show_version_in_legend = false;
+                // Wirkung kommt später in legend.rs
+                // CLI ist jetzt vorbereitet
             }
             "--help" | "-h" => {
                 print_help(&args[0]);
                 return;
             }
-            _ => {}
+            unknown => {
+                eprintln!("Unknown option: {}", unknown);
+                print_help(&args[0]);
+                std::process::exit(1);
+            }
         }
         i += 1;
     }
 
-    // -----------------------------
-    // Headless App
-    // -----------------------------
+    // -------------------------------------------------
+    // Apply resolution if provided
+    // -------------------------------------------------
+    if let (Some(w), Some(h)) = (width, height) {
+        settings.custom_resolution = true;
+        settings.resolution = [w, h];
+    }
+
+    // -------------------------------------------------
+    // Headless app
+    // -------------------------------------------------
     let mut app = MyApp::new(None, Some(input_path.clone()), settings);
 
     if let Some(color_image) = app.regenerate_spectrogram_headless() {
@@ -79,7 +95,7 @@ fn print_help(bin: &str) {
 Options:
   --width <px>        Set PNG width
   --height <px>       Set PNG height
-  --no-version        Hide Spek version text in legend
+  --no-version        Hide version text in legend (implemented next)
   -h, --help          Show this help
 "#,
         bin = bin
