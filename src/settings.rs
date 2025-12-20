@@ -126,3 +126,6 @@ impl AppSettings {
         }
     }
 }
+// Re-exports für UI & andere Module
+pub use crate::palettes::SpectrogramColorScheme;
+pub use crate::utils::SpectogramWinFunc;
