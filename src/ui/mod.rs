@@ -97,9 +97,18 @@ pub fn regenerate_spectrogram_headless(&mut self) -> Option<ColorImage> {
     let input_path = self.input_path.as_ref()?.clone();
 
     // -------------------------------------------------
-    // Resolution handling
+    // Resolution handling (HEADLESS PRIORITY)
     // -------------------------------------------------
-    let (width, height) = if self.settings.custom_resolution {
+    // Priority:
+    // 1) Explicit PNG size from CLI (png_width / png_height)
+    // 2) Custom resolution (GUI / config)
+    // 3) Default fallback (500x320)
+    let (width, height) = if self.settings.png_width > 0 && self.settings.png_height > 0 {
+        (
+            self.settings.png_width as usize,
+            self.settings.png_height as usize,
+        )
+    } else if self.settings.custom_resolution {
         (
             self.settings.resolution[0] as usize,
             self.settings.resolution[1] as usize,
@@ -133,7 +142,7 @@ pub fn regenerate_spectrogram_headless(&mut self) -> Option<ColorImage> {
     }
 
     // -------------------------------------------------
-    // Custom legend compositing (same as GUI)
+    // Custom legend compositing (same logic as GUI)
     // -------------------------------------------------
     let filename = std::path::Path::new(&input_path)
         .file_name()
