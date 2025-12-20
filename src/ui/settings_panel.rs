@@ -262,14 +262,14 @@ impl MyApp {
         if self.trigger_scale_up {
             self.trigger_scale_up = false;
             self.settings.scale =
-                crate::utils::cycle_option(self.settings.scale, &SpectrogramScale::VALUES, true);
+                crate::utils::cycle_option(self.settings.scale, &SpectrogramScale::ALL, true);
             *trigger_regeneration = true;
         }
 
         if self.trigger_scale_down {
             self.trigger_scale_down = false;
             self.settings.scale =
-                crate::utils::cycle_option(self.settings.scale, &SpectrogramScale::VALUES, false);
+                crate::utils::cycle_option(self.settings.scale, &SpectrogramScale::ALL, false);
             *trigger_regeneration = true;
         }
 
@@ -278,7 +278,7 @@ impl MyApp {
             .selected_text(self.settings.scale.to_string())
             .width(55.0)
             .show_ui(ui, |ui| {
-                for scale in SpectrogramScale::VALUES {
+                for scale in SpectrogramScale::ALL {
                     ui.selectable_value(&mut self.settings.scale, scale, scale.to_string());
                 }
             })
