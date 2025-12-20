@@ -165,6 +165,7 @@ pub fn regenerate_spectrogram_headless(&mut self) -> Option<ColorImage> {
         self.settings.saturation,
         self.settings.color_scheme,
         self.settings.split_channels,
+        self.settings.show_version_in_legend,
     );
 
     let mut final_image = utils::rgba_image_to_color_image(&legend_rgba);
