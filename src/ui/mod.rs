@@ -157,8 +157,8 @@ pub fn regenerate_spectrogram_headless(&mut self) -> Option<ColorImage> {
     );
 
     let legend_rgba = legend::draw_legend(
-        width,
-        height,
+        width as u32,
+        height as u32,
         filename,
         &ffmpeg_settings_text,
         self.audio_info.clone(),
@@ -230,8 +230,8 @@ pub fn regenerate_spectrogram_headless(&mut self) -> Option<ColorImage> {
             let audio_info = self.audio_info.clone();
 
             let legend_rgba = legend::draw_legend(
-                width,
-                height,
+                width as u32,
+                height as u32,
                 filename,
                 &ffmpeg_settings,
                 audio_info,
