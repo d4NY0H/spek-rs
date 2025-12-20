@@ -379,6 +379,7 @@ pub fn draw_legend(
     saturation: f32,
     color_scheme: SpectrogramColorScheme,
     split_channels: bool,
+    show_version: bool,
 ) -> RgbaImage {
     let final_width = spec_width + LEFT_MARGIN + RIGHT_MARGIN;
     let final_height = spec_height + TOP_MARGIN + BOTTOM_MARGIN;
