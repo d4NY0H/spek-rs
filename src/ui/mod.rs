@@ -96,13 +96,26 @@ impl MyApp {
 pub fn regenerate_spectrogram_headless(&mut self) -> Option<ColorImage> {
     let input_path = self.input_path.as_ref()?.clone();
 
-    let width = 500;
-    let height = 320;
+    // -------------------------------------------------
+    // Resolution handling
+    // -------------------------------------------------
+    let (width, height) = if self.settings.custom_resolution {
+        (
+            self.settings.resolution[0] as usize,
+            self.settings.resolution[1] as usize,
+        )
+    } else {
+        (500, 320)
+    };
+
     let cancel_token = Arc::new(AtomicBool::new(false));
 
+    // -------------------------------------------------
+    // FFmpeg must NEVER draw its own legend in headless
+    // -------------------------------------------------
     let mut ffmpeg_settings = self.settings.clone();
     ffmpeg_settings.legend = false;
-    
+
     let spectrogram = utils::generate_spectrogram_in_memory(
         &input_path,
         &ffmpeg_settings,
@@ -111,30 +124,34 @@ pub fn regenerate_spectrogram_headless(&mut self) -> Option<ColorImage> {
         cancel_token,
     )?;
 
-    // If no custom legend → return ffmpeg image directly
+    // -------------------------------------------------
+    // No custom legend → return raw spectrogram
+    // -------------------------------------------------
     if !self.settings.legend {
         self.final_image = Some(spectrogram.clone());
         return Some(spectrogram);
     }
 
-    // Custom legend compositing (same logic as GUI)
+    // -------------------------------------------------
+    // Custom legend compositing (same as GUI)
+    // -------------------------------------------------
     let filename = std::path::Path::new(&input_path)
         .file_name()
         .and_then(|s| s.to_str())
         .unwrap_or("Unknown File");
 
-    let ffmpeg_settings = format!(
+    let ffmpeg_settings_text = format!(
         "{}, {}, {}",
-        self.settings.win_func.to_string(),
-        self.settings.scale.to_string(),
-        self.settings.color_scheme.to_string()
+        self.settings.win_func,
+        self.settings.scale,
+        self.settings.color_scheme
     );
 
     let legend_rgba = legend::draw_legend(
         width,
         height,
         filename,
-        &ffmpeg_settings,
+        &ffmpeg_settings_text,
         self.audio_info.clone(),
         self.settings.saturation,
         self.settings.color_scheme,
@@ -147,6 +164,7 @@ pub fn regenerate_spectrogram_headless(&mut self) -> Option<ColorImage> {
         for x in 0..spectrogram.width() {
             let dest_x = x + legend::LEFT_MARGIN as usize;
             let dest_y = y + legend::TOP_MARGIN as usize;
+
             if dest_x < final_image.width() && dest_y < final_image.height() {
                 final_image[(dest_x, dest_y)] = spectrogram[(x, y)];
             }
